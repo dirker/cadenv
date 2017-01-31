@@ -1,0 +1,55 @@
+#!/bin/bash
+
+#
+# find real executable and start it
+#
+
+candidates() {
+	find $CADENV_ROOT/packages/*/*/bin -type f -name $e -maxdepth 1 | sort
+}
+
+candidate-packages() {
+	for c in $(candidates); do
+		p="${c##*/packages/}"
+		p="${p%%/*}"
+		echo $p
+	done | sort -u
+}
+
+env-version() {
+	local upper="$p"
+	upper=$(awk '{print toupper($0)}' <<< "$upper")
+	local varname="CADENV_PACKAGE_${upper}"
+	echo ${!varname}
+}
+
+exec-bin() {
+	local p="$1"
+	local v="$2"
+
+	exec $CADENV_ROOT/packages/$p/$v/bin/$e
+}
+
+try-env() {
+	v="$(env-version)"
+	[ -n "$v" ] || return
+
+	exec-bin $p $v
+}
+
+try-local() {
+	return
+}
+
+try-global() {
+	return
+}
+
+e="$(basename "$0")"
+p="$(candidate-packages | head -1)"
+
+try-env
+try-local
+try-global
+
+echo "cadenv: error: command '$e' not found :-("

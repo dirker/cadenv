@@ -1,0 +1,44 @@
+#!/bin/bash
+
+CADENV_DIR="$(realpath "$(dirname "$0")"/..)"
+
+packages() {
+	ls $CADENV_ROOT/packages | sort
+}
+
+package-versions() {
+	local package="$1"
+	ls $CADENV_ROOT/packages/$package | sort
+}
+
+list() {
+	for p in $(packages); do
+		for v in $(package-versions $p); do
+			echo $p-$v
+		done
+	done
+}
+
+executables() {
+	find $CADENV_ROOT/packages/*/*/bin -type f -maxdepth 1 -exec basename {} \; | sort -u
+}
+
+rehash() {
+	for e in $(executables); do
+		ln -sfn $CADENV_DIR/libexec/cadenv-exec $CADENV_ROOT/bin/$e
+	done
+}
+
+command="$1"
+
+case "$command" in
+list)
+	list
+	;;
+rehash)
+	rehash
+	;;
+*)
+	list
+	;;
+esac

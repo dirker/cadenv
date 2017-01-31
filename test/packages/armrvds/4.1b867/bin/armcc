@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo "hello, I am armcc 4.x"
